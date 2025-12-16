@@ -19,4 +19,11 @@
     <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="src\AST\" />
+    <Folder Include="src\Compiler\" />
+    <Folder Include="src\Symbols\" />
+    <Folder Include="src\Semantic\" />
+  </ItemGroup>
+
 </Project>
