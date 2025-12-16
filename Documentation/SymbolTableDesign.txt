@@ -1,0 +1,109 @@
+Symbol Table Levels:
+ - Global Level:
+	- Contains function symbols (alpha version)
+	- Global variables added later
+	- Also contains built-in types/functions
+ - Function Level:
+	- Each function introduces a new scope
+	- Contains parameters
+	- Locals declared in function body
+	- Function level scope parents to global scope
+ - Block Level:
+	- Each {...} introduces a new scope
+	- Variables declared inside of {...}
+	- Parents to function scope or enclosing block scope
+ - Scope Rules:
+	- Lookup attempts:
+		- Current scope
+		- Parent scope
+		- Parent of Parent scope
+		- Continue until found or global scope reached
+	- Shadowing: For alpha - not allowed
+
+Symbols:
+ - VariableSymbol:
+	- Name
+	- TypeInfo 
+	- isMutable = True
+	- Inferred flag (optional)
+		- If type not specified, set inferred = True else inferred = False
+		- Type fixed after first initialization if inferred
+	- Track initialized vs declared
+	- Later: Add non mutable/constants
+	- Cannot use variable before declaration
+ - FunctionSymbol
+	- Name
+	- Paramters (list of param name, typeinfo, isInferred)
+	- Return TypeInfo(int/bool/string/inferred) - Optional return type
+	- DeclarationNode (pointer to AST node)
+	- Behavior:
+		- Function symbol should be created before processing body
+		- If return type is declared:
+			- Every return must match declared type
+			- Function without return defaults to void type
+		- If return type is inferred:
+			- All return expressions must agree
+			- If no return statements, defaults to void type
+
+Processing AST:
+ - VarDeclNode:
+	- Check variable not alreadyt declare in current scope
+	- Resolve initializer expression type -> get exprType
+	- If explicit type specified:
+		- Enforse exprType matches specified type
+		- symbol.TypeInfo = specified type
+		- symbol.isInferred = False
+	- If not explicit type:
+		- symbol.TypeInfo = exprType
+		- symbol.isInferred = True
+	- Insert variable symbol into current scope
+	- Cannot use variable before declaration
+ - AssignmentNode: 
+	- Resolve variable:
+		- If found, type check assignment
+		- If not found:
+			- Create variable in current scope
+			- Infer type from RHS expression
+			- Mark as initialized
+	- Resolve expression type -> get exprType
+		- If expression contains unknown variable -> error
+	- if variable.isInferred:
+		- Enforce exprType matches variable.TypeInfo
+		- Variables do not change type after first assignmen
+	- if not inferred:
+		- Enforce exprType matches variable.TypeInfo
+	- Always allow because variables are mutable
+	- Do not infer variable type on assignment. Only on initialization
+- FunctionDeclNode:
+	- Add function symbol to global scope before processing body
+	- Put paramter symbols into function scope
+	- if parameter type is missing:
+		- Infer type based on usage in function
+		- Infer a type requirement based on how parameter is used
+		- If multiple infererences, they must agree
+		- If type still uknown after processing body then error
+		- Once inferred, parameter type is fixed
+	- Return type:
+		- if explicit:
+			- Check every return statement type matches
+			- Allow no return -> function returns void
+			- If void -> return no value
+		- if inferred:
+			- For first return statement, set function return type
+			- For subsequent return statements, enforce type matches
+			- If no return statements -> function returns void
+
+TypeInfo System:
+ - Basic Types:
+	- int
+	- bool
+	- string
+	- void (for functions that return nothing)
+ - TypeInfo Object:
+	- Name (int, bool, string, void)
+	- isInferred (True/False)
+ - Type Checking:
+	- For binary operations, enforce operand types match expected types
+	- For comparisons, enforce operands are comparable
+	- For logical operations, enforce operands are bool
+	- For function calls, enforce argument types match parameter types (if specified)

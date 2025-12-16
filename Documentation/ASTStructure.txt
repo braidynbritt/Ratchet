@@ -1,0 +1,76 @@
+Top-level Nodes:
+ - The root type for all AST nodes
+ - Optionally holds:
+	- Line/column info for error messages
+	- Node type (rarely needed early)
+
+StatementNode : Node
+ - Everything can appear in a block as a statement
+	- variable declaration
+	- assignment
+	- if, while, return
+	- expression statements
+
+ExpressionNode : Node
+ - Anything that produces a value
+	- Identifiers
+	- Literals
+	- binary/unary expressions
+	- function calls
+
+---------------------------------------------------------------------
+
+Top-Level Nodes:
+ - ProgramNode:
+	- Contains FunctionDeclNode
+	- Top level statements not allowed (yet)
+ - FunctionDeclNode:
+	- Name of function
+	- Param list of ParamsNode
+	- Optional Type
+	- Body: blockNode
+ - ParamsNode:
+	- Name of parameter
+	- Optional type
+
+Statement Nodes:
+ - BlockNode
+	- List of statement nodes
+ - VarDeclNode
+	- Name of variable
+	- Optional Type
+	- Expression (initializer)
+ - AssignmentNode
+	- Name of variable
+	- Expression (value)
+ - IfStatementNode
+	- Condition (expression)
+	- TrueBlock (BlockNode)
+	- ElseIfs: List<ElseIfNode>
+	- FalseBlock (optional BlockNode)
+ - ElseIfNode
+	- Condition (expression)
+	- TrueBlock (BlockNode)
+ - WhileNode
+	- Condition (expression)
+	- Body (BlockNode)
+ - ReturnNode
+	- Optional expression
+ - ExpressionStatementNode
+	- expression (function call)
+
+Expression Nodes:
+ - BinaryOpNode
+	- Operator: + - * / == !=- < <= > >= $ |
+ 	- Left expression
+	- Right expression
+- UnaryOpNode
+	- Operator: ! or unary -
+	- Operand
+- LiteralNode
+	- Value (int, bool, string)
+- IdentifierNode
+	- Name of variable/function
+- FunctionCallNode
+	- Function name (IdentifierNode)
+	- Argument list (list of ExpressionNode)

@@ -1,0 +1,29 @@
+func int: add(a, int: b){
+    result = a + b;
+    return result;
+}
+
+func SetHello() {
+    string: text = "Hello";
+
+}
+
+func main() {
+    SetHello();
+    
+    x = 10;
+    y = 20;
+
+    if x < y {
+        message = "x is less";
+    } 
+    else {
+        message = 'y is less';
+    }
+
+    int: sum = add(x, y);
+
+    while sum > 0 {
+        sum = sum - 1;
+    }
+}

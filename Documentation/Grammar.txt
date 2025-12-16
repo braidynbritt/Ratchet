@@ -1,0 +1,44 @@
+﻿Statements:
+    Statement -> VarDecl ";"
+               | Assignment ";"
+               | Expr ";"
+               | IfStatement
+               | WhileStatement
+               | ReturnStatement ";"
+               | Block
+
+Variable Declaration:
+    VarDecl -> Identifier "=" Expr
+             | Type ":" Identifier "=" Expr
+
+Assignment:
+    Assignment -> Identifier "=" Expr
+
+If Statement:
+    IfStatement -> "if" Condition Block ElseChain?
+    ElseChain -> "else" (IfStatement | Block)
+    Condition -> Expr
+
+While Statement:
+    WhileStatement -> "while" Condition Block
+
+Return Statement:
+    ReturnStatement -> "return" ExprOpt
+    ExprOpt -> Expr | ε
+
+Blocks:
+    Block -> "{" Statement "}"
+
+Logical OR:
+    Expr -> LogicalOr
+    LogicalOr -> LogicalAnd { "|" LogicalAnd }
+
+Logical AND:
+    LogicalAnd -> Equality { "&" Equality }
+
+Equality:
+    Equality -> Comparison { ("==" | "!=") Comparison }
+
+Comparison:
+    Comparison -> Additive { ("<" | ">" | "<=" | ">=") Additive }
+

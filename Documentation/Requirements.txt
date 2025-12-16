@@ -1,0 +1,98 @@
+Type System:
+ - Dynamic typing by default
+ - Optional explicit type annotations
+ - Minimal Types: int, bool, string
+
+Variables:
+ - Mutable by default
+ - Declaration:
+   - Dynamic: var = value (x = 5)
+   - Typed: type: var = value (int: x = 5)
+
+Expressions:
+ - Arithmetic: +, -, *, /, %
+ - Comparison: ==, <, >, <=, >=
+ - Logical: &, |, !
+
+Punctuation:
+ - Assignment: =
+ - Separators: , ;
+ - Block Delimiters: { }
+
+Control Flow:
+ - If-Else:
+   - if condition { ... } else { ... }
+   - if condition { ... }
+   - parantheses optional around condition
+   - condition must evaluate to bool
+ - While Loops
+   - while condition { ... }
+   - Parantheses optional around condition
+   - condition must evaluate to bool
+ - Return Statements
+
+Functions:
+ - Declarations: 
+   - Dynamic: func name(params) {body}
+   - Typed: func returnType: name(params) {body}
+ - Structure:
+   - Parameters:
+     - Comma separated
+     - Untyped params unless specified
+     - Default to dynamic type
+   - Return Type:
+     - Optional type annotation
+     - Defaults to dynamic type
+     - "Return" not required if returning nothing
+     - Return statement must match declared return type if specified
+
+Entry Point:
+ - Main function
+
+Syntax:
+ - Statements end with ;
+   - Future will not require ;
+ - Blocks enclosed in { }
+
+Keywords:
+ - func, if, else, while, return, int, bool, string, main, true, false
+
+Symbols:
+ - = { } ( ) , ; : ! & | == != < > <= >= + - * / % " '
+
+Whitespace:
+ - Separates tokens
+ - Ignored except inside string literals
+ - Newlines will matter in the future for statement termination
+
+Comments:
+ - Single-line: // comment
+ - Multi-line: /* comment */
+
+Identifier rules:
+ - Start with letter or _
+ - Followed by letters, digits, or _
+ - Case-sensitive
+
+String literals:
+ - Enclosed in double or single quotes
+ - Support escape sequences: \n, \t, \", \\
+
+Integer literals:
+ - Decimal for now
+
+Boolean literals:
+ - true, false
+ - 0 is false, non-zero is true in expressions
+
+Future:
+ - Support for arrays, structs, classes
+ - Global variables
+ - Object-oriented programming features
+ - Will support += , -=, *=, /=, ++, --, etc. in future
+ - Support for hex and binary numerics
+ - Multi-line strings
+ - Support output
+ - else if constructs
+ - Constant folding and optimizations
+ - Unreachable code detection

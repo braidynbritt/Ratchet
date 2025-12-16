@@ -1,0 +1,357 @@
+Types supported:
+ - int
+ - bool
+ - string
+ - void (for functions that do not return a value)
+ - Internal types (for type inference and errors)
+	- UnknownType
+	- errorType
+
+TypeInfo Rules:
+ - TypeInfo Object:
+	- Name (int, bool, string, void, UnknownType, errorType)
+	- isInferred (True/False)
+	- Kind (enum: Primitive, Void, Uknown, Error)
+
+Type Equality:
+ - Two TypeInfo are equal if:
+	- Both have same Name
+	- Both are primitives OR both are void OR both are same user-defined type
+ - UnknownType is equal to:
+	- nothing during normal type checking
+	- but participates in inferences constraint solving
+ - errorType is equal to:
+	- Everything to avoid cascading errors
+
+Type compatibility:
+ - int <-> int
+ - bool <-> bool
+ - string <-> string
+ - Special Rules:
+	- Comparing any primitive type with itself is allowed
+	- Comparing different primitive types results in type error
+	- Logical operations (&, |) require bool operands
+	- Arithmetic operations (+, -, *, /, %) require int operands
+ - Truthiness:
+	- 0 is false, non-zero int is true
+	- Only applied while evaluating if and while conditions
+	- bool is still required type of logical expressions
+	- int -> bool conversion is implicit specific statement conditions only
+
+Implicit conversion rules:
+ - int -> bool in conditions (if, while) only
+ - unknownType -> T when solving type inference constraints
+ - T -> unknownType when unifying (ambiguous, treated as unknown until fixed)
+ - No automatic conversion between:
+	- int -> string
+	- string -> int
+	- int <-> bool (except in conditions)
+	- string <-> bool
+	- void <-> any type
+
+Literals:
+ - Integer literals:
+	- Type: int
+	- Must fit within 64-bit integer range
+ - Boolean literals:
+	- true and false
+	- Type: bool
+- String literals:
+	- Type: string
+	- "..." or '...'
+	- Escape sequences supported: \n, \t, \", \', \\
+		- Must be validated
+	- Empty string is valid
+
+Inference Rules:
+ - Local variable inference:
+	- if declared without type, infer from initializer expression
+	- if declared with type, use it
+	- isInferred = True if no explicit type
+	- variable type after initialization is fixed
+	- assignment cannot change type
+ - Parameter inference:
+	- Parameter without type starts as UnknownType
+	- Usage in function body adds constraints and declares type
+	- if multiple constraints, they must agree
+	- if still UnknownType after processing body, error
+	- Once inferred, parameter type is fixed
+ - Function return type inference:
+ 	- if explicit return type, enforce all return statements match it
+	- if inferred:
+		- first return statement sets function return type
+		- subsequent return statements must match
+		- if no return statements, function returns void
+
+Error rules:
+ - illegal implicit conversion examples:
+ 	- "hello" + 5
+	- true + 10
+	- 1 & "test"
+	- bool = 10
+- unknown type errors:
+	- Parameter type cannot be inferred
+	- Using variable before declaration
+	- Using a variable whose type remains UnknownType after semantic analysis
+- Void misuse errors:
+	- Using void value in expression
+	- Returning a value from a void function
+	- Not returning a value from a non-void function
+- Type mismatch errors:
+	- Arithmetic operations with non-int operands
+	- Logical operations with non-bool operands
+	- Comparison operations with incompatible types
+	- Assigning value of incompatible type to variable
+	- Function call argument type mismatches
+
+Current operators:
+ - Arithmetic: +, -, *, /, %
+ - Comparison: <, <=, >, >=
+ - Logical: &, |
+ - Equality: ==, !=
+ - Unary: !, - (unary minus)
+ - Grouping: ( )
+ - (Assignment "=" handled elsewhere)
+ - No overloading of operators based on type. No implicit conversions except int->bool in conditions. No bitwise operators.
+
+High level type policy:
+ - Operators require specific operand types
+ - If operator is unknown, the operator imposes a constraint that the operand must unify with the required type
+ - If constraint conflicts with existing type, error
+
+Operator Rules:
+ - Arithmetic (+, -, *, / , %)
+	- Operand types: int, int
+	- Result type: int
+	- Notes:
+		- / is integer division
+		- % for int only
+	- Errors:
+		- Division or modulo by zero results in runtime error (not type error)
+	- Inference:
+		- if operand type is UnknownType, infer as int
+ - Comparison (<, <=, >, >=)
+	- Operand types: int, int
+	- Evaluation:
+		- a < b -> bool
+		- (a < b) > c -> comparison of bool to int
+			- only allowed inside a conditional where bool -> truthiness permitted
+	- Result type: bool
+	- Errors:
+		- Comparing non-int types results in type error
+		- Chaining in same direction (a < b < c) is not allowed
+	- Inference:
+		- if operand type is UnknownType, infer as int
+ - Equality (==, !=)
+	- Operand types: T, T (same type)
+	- Result type: bool
+	- Errors:
+		- Comparing different primitive types results in type error
+		- errored types allow comparison to avoid cascading errors
+	- Inference:
+		- if operand type is UnknownType, infer as the other operand's type
+		- Leave unknonwn unless more constraints are added
+ - Logical (&, |)
+	 - Operand types: bool, bool
+	 - Result type: bool
+	 - Short-circuiting:
+		- L & R: Evaluate L; If L is false, result is false
+		- L | R: Evaluate L; If L is true, result is true
+	 - Errors:
+		 - Non-bool operands result in type error
+	 - Inference:
+		- if operand type is UnknownType, infer as bool
+ - Logical Unary (!)
+	- Operand types: bool
+	- Result type: bool
+	- Evaluations: Evalutate operand, then negate
+	- Errors:
+		- Non-bool operand results in type error
+	- Inference:
+		- if operand type is UnknownType, infer as bool
+ - Unary Minus (-)
+ 	- Operand types: int
+	- Result type: int
+	- Errors:
+		- Non-int operand results in type error
+	- Inference:
+		- if operand type is UnknownType, infer as int
+
+Precedence and Associativity:
+ 1. Parentheses () - Grouping
+ 2. Unary Operators: !, - (unary minus) - Right associative
+ 3. Multiplicative: *, /, % - Left associative
+ 4. Additive: +, - - Left associative
+ 5. Comparison: <, <=, >, >= - Left associative
+ 6. Equality: ==, != - Non-associative
+ 7. Logical AND: & - Left associative
+ 8. Logical OR: | - Left associative
+ - Assignment (=) handled separately in statements
+ - non-associative operators cannot be chained without parentheses
+
+ Variable Declaration Rules:
+ - Variable must not exist in current scope
+ - Evalute initializer expression -> Get type T
+ - If explicit type U provided:
+     - Enforce T matches U
+	 - symbol.TypeInfo = U = T
+	 - symbol.isInferred = False
+ - If no explicit type:
+	 - symbol.TypeInfo = T
+	 - symbol.isInferred = True
+ - Mark variable as initialized
+ - Add variable to symbol table/ current scope
+ - Only considered declared after initializer if full type-checked
+ - Errors:
+	 - Redeclaring existing variable in same scope
+	 - Type mismatch between initializer and explicit type
+	 - Using variable before declaration
+
+Assignment Rules:
+ - Look up variable in symbol table/ current scope
+	- If found, treat as assignment
+	 - If not found:
+		- Create variable in current scope
+		- Infer type from RHS expression
+		- Mark as initialized
+ - assignment RHS expression -> Get type T
+ - Variable type must match expression type T
+ - Variables are mutable
+ - Errors:
+	 - Type mismatch between variable and assigned expression
+	 - Expression contains unknown variable during assignment
+	 - Using undeclared var in RHS
+
+Expression Statement Rules:
+ - used for:
+     - function calls
+	 - discarding return value
+ - Must be a valid expression
+ - If expression produces a value, it is ignored
+ - Cannot be an identifier or literal alone
+
+If/ElseIf/Else Statement Rules:
+ - Condition expression must evaluate to bool
+	- bool
+	- Int (0 = false, non-zero = true)
+ - Blocks
+	- Each block has its own scope
+	- Shadowing not allowed
+ - ElseIf chain
+	- Checked in order
+	- ElseBlock only executed if all previous conditions false
+ - Responsibilities:
+	- validate each condition evaluates to bool/int (via truthiness)
+	- validate each block
+	- Maintain separate scopes for each block
+ - Errors:
+	 - Condition not evaluating to bool/int
+	 - Using undeclared variables in conditions or blocks
+
+While Loop Statement Rules:
+ - Condition expression must evaluate to bool
+	- bool
+	- Int (0 = false, non-zero = true)
+ - Loop body has its own scope
+ - Responsibilities:
+	- validate condition evaluates to bool/int (via truthiness)
+	- validate loop body
+	- Maintain separate scope for loop body
+	- Evaluate condition before each iteration
+	- Semantic analyzer:
+		- Only checks type rules, not loop termination
+ - Errors:
+	 - Condition not evaluating to bool/int
+	 - Using undeclared variables in condition or body
+
+Return Semantic Rules:
+ - Inside function body
+	- If function has explicit return type T:
+		- Return Expression must match type
+		- Or return nothing if T is void
+	- If function has inferred return type:
+		- First return statement sets function return type
+		- Subsequent return statements must match inferred type
+	- If no return statements, function returns void
+ - Errors:
+	 - Returning value from void function
+	 - Not returning value from non-void function
+	 - Return expression type mismatch with declared return type
+	 - Inferred return type conflicts with existing return statements
+
+Block Semantic Rules:
+ - New scope created for block
+ - Contains list of statement
+ - Varaibles declared inside block are scoped to block
+ - Cannot redeclare existing variable in same scope
+ - Shadowing not allowed
+
+ Function Semantic Rules:
+  - Function Declaration:
+	- Function name must be unique in global scope
+	- Function symbol created before processing body
+		- Enables recursion
+	- Function introduced new function scope
+	- Function scope parent is global scope
+  - Parameters:
+	- Declaration rules:
+		- Parameters only exist in function scope
+		- Behave like local variables
+		- May be inferred or explicitly typed
+	- Inference rules:
+		- Untyped parameters start as UnknownType
+		- Usage in body adds constraints
+		- All constraints must agree
+		- If still UnknownType after body, error
+ - Returns:
+	- Explicit return type:
+		- All return statements must match declared type
+		- return; allowed if return type is void
+		- Falling off the end is equivelant to return;
+	- Inferred return type:
+		- First return statement sets function return type
+		- Subsequent return statements must match inferred type
+		- If no return statements, function returns void
+	- Return flow:
+		- Functions do not need to return on all paths
+		- Missing return defaults to void return
+		- No unreachable code detection yet
+		- No definite return path checking yet
+ - Function Calls:
+	- Function must exist in global scope
+	- Arg count must match parameter count
+	- Each argument must be compatible with corresponding parameter type
+	- if parameter is UnknownType, infer from argument type
+	- Function call expression type is function's return type
+- Scope interaction:
+	- Assignment resolves to nearest existing symbol
+	- If none exist -> create new variable in current scope
+	- Block scopes behave normally
+
+Semantic Pass Ordering:
+ - Pass 0 - AST construction
+	- Pure syntax
+	- No symbols
+	- No Types
+ - Pass 1 - Symbol introduction
+	- Create scopes
+	- Register:
+		- functions (global scope)
+		- parameters (function scope)
+		- variables on declaration/implicit assignment
+	- Detect redeclarations
+	- Resolve identifiers
+ - Pass 2 - Type inference and checking
+	- resolve expression types
+	- enforce operator rules
+	- infer variables, params, return types
+	- validate assingmnets, calls, and returns
+ - Pass 3 - Control-flow checks
+	- Ensure return only inside functions
+	- Validate conditions (truthiness)
+	- No unreachable code or definite return analysis yet
+
+ Error Strategy:
+  - Collect as many errors as possible per file
+  - Use errorType to prevent cascading errors
+  - Abort godegen if any semantic errors exist
