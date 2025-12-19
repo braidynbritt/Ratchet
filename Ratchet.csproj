@@ -20,10 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\AST\" />
-    <Folder Include="src\Compiler\" />
-    <Folder Include="src\Symbols\" />
-    <Folder Include="src\Semantic\" />
+    <Folder Include="Compiler\" />
+    <Folder Include="Symbols\" />
+    <Folder Include="Semantic\" />
   </ItemGroup>
 
 </Project>
