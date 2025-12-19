@@ -9,7 +9,7 @@ namespace Ratchet.AST
         public ExpressionNode Condition { get; }
         public BlockNode TrueBlock { get; }
         public BlockNode? FalseBlock { get; }
-        public List<ElseIfNode> ElseIfNodes { get; }
+        public IReadOnlyList<ElseIfNode> ElseIfNodes { get; }
 
         public IfStatementNode(
             ExpressionNode condition, 

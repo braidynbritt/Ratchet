@@ -13,8 +13,8 @@ namespace Ratchet.AST
 
         public VarDeclNode(
             string variableName,
-            TypeNode type, 
-            ExpressionNode? expression
+            TypeNode? type, 
+            ExpressionNode? expression,
             int line,
             int column
         ) : base(line, column)

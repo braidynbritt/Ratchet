@@ -20,6 +20,6 @@ namespace Ratchet.AST
             Body = body;
         }
         public override T Accept<T>(IAstVisitor<T> visitor)
-            => visitor.VisitWhileNode( this );
+            => visitor.VisitWhile( this );
     }
 }

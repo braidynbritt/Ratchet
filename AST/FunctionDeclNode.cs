@@ -13,7 +13,7 @@ namespace Ratchet.AST
         
         public FunctionDeclNode(
             string functionName,
-            VarDeclNode? paramList,
+            List<VarDeclNode>? paramList,
             TypeNode? type,
             BlockNode body,
             int line,

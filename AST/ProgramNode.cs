@@ -7,7 +7,7 @@ namespace Ratchet.AST
 {
     public sealed class ProgramNode : ASTNode
     {
-        public List<FunctionDeclNode> Functions { get; }
+        public IReadOnlyList<FunctionDeclNode> Functions { get; }
 
         public ProgramNode(
             List<FunctionDeclNode> functions
@@ -19,7 +19,7 @@ namespace Ratchet.AST
         }
 
         public override T Accept<T>(IAstVisitor<T> visitor)
-            => visitor.VisitProgramNode( this );
+            => visitor.VisitProgram( this );
             
     }
 }

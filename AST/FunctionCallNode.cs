@@ -6,8 +6,8 @@ namespace Ratchet.AST
 {
     public sealed class FunctionCallNode : ExpressionNode
     {
-        public string FunctionName { get; };
-        public List<ExpressionNode> ArgumentList { get; };
+        public string FunctionName { get; }
+        public IReadOnlyList<ExpressionNode> ArgumentList { get; }
 
         public FunctionCallNode(
             string functionName,

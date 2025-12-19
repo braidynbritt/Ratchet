@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ratchet.AST
 {
-    public sealed class ElseIfNode : StatementNode
+    public sealed class ElseIfNode : ASTNode
     {
         public ExpressionNode Condition { get; }
         public BlockNode TrueBlock { get; }

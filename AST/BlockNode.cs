@@ -6,10 +6,10 @@ namespace Ratchet.AST
 {
     public sealed class BlockNode : StatementNode
     {
-        public List<StatementNode> StatementNodes { get; }
+        public IReadOnlyList<StatementNode> StatementNodes { get; }
 
         public BlockNode(
-            List<StatementNode> statementNodes
+            List<StatementNode> statementNodes,
             int line,
             int column
         ) : base(line, column)

@@ -8,7 +8,5 @@ namespace Ratchet.AST
     {
         protected ExpressionNode(int line, int column)
             : base(line, column) { }
-        {
-        }
     }
 }
