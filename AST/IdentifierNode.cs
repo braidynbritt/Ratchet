@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ratchet.AST
+﻿namespace Ratchet.AST
 {
     public sealed class IdentifierNode : ExpressionNode
     {

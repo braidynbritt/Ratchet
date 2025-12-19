@@ -9,6 +9,7 @@ namespace Ratchet.AST
         //Top-Level
         T VisitProgram(ProgramNode node);
         T VisitFunctionDecl(FunctionDeclNode node);
+        T VisitType(TypeNode node);
 
         //Expressions
         T VisitBinaryOp(BinaryOpNode node);

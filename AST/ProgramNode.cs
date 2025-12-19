@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
-
-namespace Ratchet.AST
+﻿namespace Ratchet.AST
 {
     public sealed class ProgramNode : ASTNode
     {
         public IReadOnlyList<FunctionDeclNode> Functions { get; }
 
         public ProgramNode(
-            List<FunctionDeclNode> functions
+            List<FunctionDeclNode> functions,
             int line,
             int column
         ) : base(line, column)

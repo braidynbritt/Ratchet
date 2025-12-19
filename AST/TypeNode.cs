@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ratchet.AST
+﻿namespace Ratchet.AST
 {
     public sealed class TypeNode : ASTNode
     {
@@ -16,5 +12,8 @@ namespace Ratchet.AST
         {
             Name = name;
         }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+            => visitor.VisitType(this);
     }
 }
