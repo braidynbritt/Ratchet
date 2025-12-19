@@ -29,9 +29,6 @@ Top-Level Nodes:
 	- Param list of ParamsNode
 	- Optional Type
 	- Body: blockNode
- - ParamsNode:
-	- Name of parameter
-	- Optional type
 
 Statement Nodes:
  - BlockNode
@@ -61,7 +58,7 @@ Statement Nodes:
 
 Expression Nodes:
  - BinaryOpNode
-	- Operator: + - * / == !=- < <= > >= $ |
+	- Operator: + - * / == != < <= > >= $ |
  	- Left expression
 	- Right expression
 - UnaryOpNode
@@ -69,7 +66,7 @@ Expression Nodes:
 	- Operand
 - LiteralNode
 	- Value (int, bool, string)
-- IdentifierNode
+- IdentifierNode (difference between this and assignment node?)
 	- Name of variable/function
 - FunctionCallNode
 	- Function name (IdentifierNode)
