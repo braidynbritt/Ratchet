@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text;
+
+namespace Ratchet.AST
+{
+    public sealed class ProgramNode : ASTNode
+    {
+        public List<FunctionDeclNode> Functions { get; }
+
+        public ProgramNode(
+            List<FunctionDeclNode> functions
+            int line,
+            int column
+        ) : base(line, column)
+        {
+            Functions = functions;
+        }
+
+        public override T Accept<T>(IAstVisitor<T> visitor)
+            => visitor.VisitProgramNode( this );
+            
+    }
+}
