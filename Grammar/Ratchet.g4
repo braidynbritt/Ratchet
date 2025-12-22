@@ -169,13 +169,13 @@ unary
     ;
 
 primary
-    : INT_LITERAL
-    | STRING_LITERAL
-    | TRUE
-    | FALSE
-    | IDENTIFIER
-    | functionCall
-    | LPAREN expr RPAREN
+    : INT_LITERAL           # intLiteral
+    | STRING_LITERAL        # stringLiteral
+    | TRUE                  # trueLiteral
+    | FALSE                 # falseLiteral
+    | IDENTIFIER            # identifier
+    | functionCall          # call
+    | LPAREN expr RPAREN    # grouping
     ;
 
 functionCall
