@@ -1,11 +1,7 @@
 ﻿using Ratchet.AST;
-using System.Data.Common;
 
 namespace Ratchet.Semantic
 {
-    /*
-        This pass defines symbols, resolves indentifiers, and enforces scope rules
-    */
     public class SemanticAnalyzer : IAstVisitor<object>
     {
         private Scope currentScope;
