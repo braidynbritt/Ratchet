@@ -1,4 +1,5 @@
 ﻿using Ratchet.AST;
+using Ratchet.Symbols;
 
 namespace Ratchet.Semantic
 {

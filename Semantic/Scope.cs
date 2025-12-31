@@ -1,4 +1,6 @@
-﻿namespace Ratchet.Semantic
+﻿using Ratchet.Symbols;
+
+namespace Ratchet.Semantic
 {
     internal class Scope
     {

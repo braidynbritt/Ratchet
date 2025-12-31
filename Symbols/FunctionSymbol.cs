@@ -1,4 +1,4 @@
-namespace Ratchet.Semantic
+namespace Ratchet.Symbols
 {
     internal class FunctionSymbol : Symbol
     {
