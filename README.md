@@ -1,43 +1,60 @@
 ﻿# Ratchet
 
-Ratchet is an experimental, minimal programming language implementation written in C# targeting .NET 10. The project includes an ANTLR4 grammar, an AST builder, and documentation for semantic rules and symbol table design. 
-Ratchet is intended as a learning / research language for exploring parsing, AST construction, and semantic analysis.
+Ratchet is an experimental, minimal programming language implementation written in C# targeting .NET 10. It uses ANTLR4 for parsing, constructs an AST, and performs a semantic analysis pass that includes symbol table management, parameter/return inference, and initialization checks.
 
-## Features
+## Key features
 
-- ANTLR4 grammar: `Grammar/Ratchet.g4`
-- AST construction with visitor pattern (`AST/`)
-- Semantic design notes and example programs in `Documentation/`
-- Target: .NET 10
+- Parser: ANTLR4 grammar in `Grammar/Ratchet.g4`.
+- AST construction: `AST/ASTBuilder.cs` and typed AST nodes in `AST/`.
+- Semantic analysis: `Semantic/SemanticAnalyzer.cs` with:
+  - Scope and symbol management (`Semantic/Scope.cs`, `Symbols/`).
+  - `FunctionSymbol` recording of parameter types and return type.
+  - Parameter type inference from usages when parameters are untyped.
+  - Function return inference: first return sets inferred return type when none declared.
+  - Enforcement of declared return types and requirement that functions with a declared non-void return type actually return on required paths.
+  - `Symbol.IsInitialized` tracking and use-before-initialization errors.
+  - Basic type checking for literals, unary/binary operators, assignments and calls.
+- Example programs: `Documentation/ExampleLanguage.txt`.
+- Design docs: `Documentation/SemanticRules.txt`, `Documentation/SymbolTableDesign.txt`.
 
-## Requirements
+## Current semantics (short)
 
-- .NET 10 SDK
-- (Optional) ANTLR4 tooling if you regenerate the parser from the `.g4` grammar
-
-## Build
-
-From the repository root:
-If you change `Grammar/Ratchet.g4`, regenerate the parser (using ANTLR4 tool) and then rebuild.
-
-## Run
-
-If there is an executable project that drives parsing/compilation, run it like:
-Replace `<project-path>` with the path to the runnable project in the solution.
-
+- Primitive types: `int`, `bool`, `string`, plus `void`.
+- Variables:
+  - Can be declared typed (`int: x = 5`) or untyped and inferred from initializer/assignment.
+  - `Symbol.IsInitialized` is tracked; using an uninitialized variable yields a semantic error.
+- Functions:
+  - Function symbols (name, parameter types, return type) are created before analyzing bodies (supports recursion).
+  - Parameters may be untyped; semantic pass attempts to infer their types from usage. Conflicts produce errors.
+  - Return rules:
+    - If a function has an explicit return type other than `void`, it must return a matching value on the required code paths (the analyzer checks that the function body guarantees a return on those paths).
+    - If no return type is declared:
+      - If the function contains at least one `return`, the first return sets the function return type and subsequent returns must match.
+      - If the function contains no `return`, it defaults to returning `void`.
+- Function calls:
+  - Checked for existence, arity, and (when available) argument type compatibility. Untyped parameters may be inferred from call sites or body usage.
 
 ## Project layout
 
-- `Grammar/` — ANTLR `.g4` grammar
-- `AST/` — AST node types and the `ASTBuilder` visitor
-- `Documentation/` — design notes: AST structure, symbol table and semantic rules, examples
-- `obj/` — generated parser code (checked in or generated during build)
+- `Grammar/` — ANTLR `.g4` grammar.
+- `AST/` — AST node types and the `ASTBuilder` visitor.
+- `Semantic/` — `SemanticAnalyzer`, `Scope` and related logic.
+- `Symbols/` — `Symbol`, `FunctionSymbol`.
+- `Documentation/` — design notes and examples.
+- `obj/` — generated parser code (may be checked-in or regenerated during build).
 
-## Grammar notes
+## Build
 
-Ratchet follows conventional operator precedence via the grammar (unary, multiplicative, additive, comparison, equality, logical AND, logical OR). 
-The grammar uses iterative rules (for example `additive : multiplicative ((PLUS|MINUS) multiplicative)*`) so generated parser contexts expose lists of children — visitors should fold those lists left‑associatively when building binary AST nodes.
+Prerequisites:
+- .NET 10 SDK.
+- (Optional) ANTLR4 tooling to regenerate parser when `Grammar/Ratchet.g4` changes.
 
-Decisions reflected in the grammar and docs:
-- Equality and comparison rules can be non‑associative or chaining depending on the chosen rule (`?` vs `*`). Keep grammar and visitor logic consistent.
-- `primary` alternatives are labeled and map to `Visit...` methods in the visitor.
+Build from repository root:
+
+```
+dotnet build
+```
+
+## License
+
+MIT — see `LICENSE.txt`.
