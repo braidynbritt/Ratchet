@@ -12,11 +12,11 @@ namespace Ratchet.Semantic
         {
             Symbols = new Dictionary<string, Symbol>();
         }
-        public bool Define(string name, string? typeName = null, bool isInferred = false)
+        public bool Define(string name, string? typeName = null, bool isInferred = false, bool isInitialized = false)
         {
             if (!Symbols.ContainsKey(name))
             {
-                Symbols.Add(name, new Symbol(name, typeName, isInferred));
+                Symbols.Add(name, new Symbol(name, typeName, isInferred, isInitialized));
                 return true;
             }
 

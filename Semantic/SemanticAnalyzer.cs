@@ -55,7 +55,7 @@ namespace Ratchet.Semantic
                     }
                     else
                     {
-                        currentScope.Define(param.VariableName, param.Type?.Name, param.Type?.Name == null);
+                        currentScope.Define(param.VariableName, param.Type?.Name, param.Type?.Name == null, isInitialized: true);
                     }
                 }
             }
@@ -98,19 +98,18 @@ namespace Ratchet.Semantic
                 return null;
             }
 
-            // Cache inferred types
+            node.Left.Accept(this);
+            node.Right.Accept(this);
+
             var leftType = InferExpressionType(node.Left);
             var rightType = InferExpressionType(node.Right);
 
-            if (leftType != rightType)
+            if (leftType != rightType && rightType != null && leftType != null)
             {
                 semanticErrors.Add(new ErrorType(
                     $"Semantic Error: Binary operator '{node.Operator}' operands type mismatch: left is '{leftType ?? "unknown"}', right is '{rightType ?? "unknown"}'.",
                     node.Line, node.Column));
             }
-
-            node.Left.Accept(this);
-            node.Right.Accept(this);
 
             if ((node.Operator == BinaryOperatorType.Division || node.Operator == BinaryOperatorType.Modulo)
                 && node.Right is LiteralNode rightLit
@@ -181,10 +180,17 @@ namespace Ratchet.Semantic
         }
         public object VisitIdentifier(IdentifierNode node) 
         { 
-            if (!currentScope.ExistsInAnyScope(node.VariableName))
+            var symbol = currentScope.GetSymbol(node.VariableName);
+            if (symbol == null)
             {
                 semanticErrors.Add(new ErrorType($"Semantic Error: Variable {node.VariableName} not defined in this scope.", node.Line, node.Column));
             }
+
+            if (!symbol.IsInitialized)
+            {
+                semanticErrors.Add(new ErrorType($"Semantic Error: Variable {node.VariableName} used before initialization.", node.Line, node.Column));
+            }
+
             return null; 
         }
         public object VisitFunctionCall(FunctionCallNode node)
@@ -231,9 +237,9 @@ namespace Ratchet.Semantic
             var rhs = node.Expression;
             string? inferredType = InferExpressionType(rhs);
            
-            if (!currentScope.ExistsInAnyScope(node.VariableName))
+            if (!currentScope.ExistsInCurrentScope(node.VariableName))
             {
-                currentScope.Define(node.VariableName, inferredType, inferredType == null);
+                currentScope.Define(node.VariableName, inferredType, inferredType == null, isInitialized: true);
                 node.Expression.Accept(this);
             }
             else
@@ -253,6 +259,9 @@ namespace Ratchet.Semantic
                         symbol.TypeName = inferredType;
                     }
                 }
+
+                symbol.IsInitialized = true;
+                node.Expression.Accept(this);
             }
             return null; 
         }
@@ -264,7 +273,9 @@ namespace Ratchet.Semantic
             }
             else
             {
-                currentScope.Define(node.VariableName);
+                var inferredType = node.Expression != null ? InferExpressionType(node.Expression) : null;
+                bool isInitialized = node.Expression != null;
+                currentScope.Define(node.VariableName, node.Type?.Name ?? inferredType, node.Type == null && inferredType == null, isInitialized);
             }
             node.Expression?.Accept( this );
 
@@ -403,7 +414,7 @@ namespace Ratchet.Semantic
             return null; 
         }
 
-        private string? InferExpressionType(object expr)
+        private string? InferExpressionType(ExpressionNode expr)
         {
             if (expr is LiteralNode lit)
             {

@@ -8,11 +8,14 @@
 
         public bool IsInferred { get; set; }
 
-        public Symbol(string name, string? typeName = null, bool isInferred = false)
+        public bool IsInitialized { get; set; }
+
+        public Symbol(string name, string? typeName = null, bool isInferred = false, bool isInitialized = false)
         {
             Name = name;
             TypeName = typeName;
             IsInferred = isInferred;
+            IsInitialized = isInitialized;
         }
     }
 }
