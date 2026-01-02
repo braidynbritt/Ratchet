@@ -42,6 +42,8 @@ namespace Ratchet.Semantic
             var previousFunction = currentFunctionSymbol;
             currentFunctionSymbol = functionSymbol;
 
+            var declaredReturnBefore = functionSymbol?.ReturnType;
+
             Scope newScope = new Scope { ParentScope = currentScope };
             currentScope = newScope;
 
@@ -60,7 +62,21 @@ namespace Ratchet.Semantic
                 }
             }
 
+            bool mustReturn = functionSymbol?.ReturnType != "void" && functionSymbol?.ReturnType != null;
+            bool guaranteesReturn = BlockGuaranteesReturn(node.Body);
+
             node.Body.Accept(this);
+
+            if (mustReturn && !guaranteesReturn)
+            {
+                semanticErrors.Add(new ErrorType($"Semantic Error: '{node.FunctionName}' does not return a value on all code paths", node.Line, node.Column));
+            }
+
+            if (functionSymbol?.ReturnType == null && !guaranteesReturn)
+            {
+                functionSymbol.ReturnType = "void";
+            }
+            
 
             if (functionSymbol != null && node.ParamList != null)
             {
@@ -184,6 +200,7 @@ namespace Ratchet.Semantic
             if (symbol == null)
             {
                 semanticErrors.Add(new ErrorType($"Semantic Error: Variable {node.VariableName} not defined in this scope.", node.Line, node.Column));
+                return null;
             }
 
             if (!symbol.IsInitialized)
@@ -434,6 +451,12 @@ namespace Ratchet.Semantic
                 return sym?.TypeName;
             }
 
+            if(expr is FunctionCallNode call)
+            {
+                var func = currentScope.GetFunction(call.FunctionName);
+                return func?.ReturnType;
+            }
+
             if (expr is BinaryOpNode bin)
             {
                 switch (bin.Operator)
@@ -470,5 +493,42 @@ namespace Ratchet.Semantic
 
             return null;
         }
+
+        private bool BlockGuaranteesReturn(BlockNode block)
+        {
+            foreach (var stmt in block.StatementNodes)
+            {
+                if (stmt is ReturnNode)
+                    return true;
+
+                if (stmt is IfStatementNode ifStmt)
+                {
+                    bool thenReturns = BlockGuaranteesReturn(ifStmt.TrueBlock);
+
+                    bool elseReturns = false;
+                    if (ifStmt.FalseBlock != null)
+                    {
+                        elseReturns = BlockGuaranteesReturn(ifStmt.FalseBlock);
+                    }
+                    else if (ifStmt.ElseIfNodes != null && ifStmt.ElseIfNodes.Count > 0)
+                    {
+                        elseReturns = ifStmt.ElseIfNodes
+                            .All(e => BlockGuaranteesReturn(e.TrueBlock));
+                    }
+
+                    if (thenReturns && elseReturns)
+                        return true;
+                }
+
+                if (stmt is BlockNode inner)
+                {
+                    if (BlockGuaranteesReturn(inner))
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
     }
 }
